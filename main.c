@@ -1,339 +1,258 @@
+/*
+==ORDEM DAS FUNÇÕES==
+registrarUsuarioComum()
+registrarColetor()
+loginUsuario() -> login apenas para o usuário
+
+
+*/
 #include <stdio.h>
-#include <locale.h>
 #include <stdlib.h>
+#include <locale.h>
 #include <string.h>
-#include <time.h>
 
-char userInsert[50], senhaInsert[50];
+int autenticado = 1;
 
-typedef struct {
-    char bairro[50];
+typedef struct{ //estrutra para o endereço disponível
     char rua[50];
-    char numero[50];
-    char enderecoConcat[100];
+    char bairro[50];
+    int numero;
 } Endereco;
 
-typedef struct {
-    char user[50];
+typedef struct{  //estrutura para usuario e senha(usuário normal)
+    char nome[50];
     char senha[50];
-    int userNumber;
 } Login;
 
-int loginColetor(char user[], char senha[]) {
-    FILE *file;
-    file = fopen("cadastroColetor.txt", "rb");
+typedef struct{  //estrutura para o coletor
+    char nomeColetor[50];
+    char senhaColetor[50];
+} LoginColetor;
 
-    if(file == NULL){
-        printf("Erro ao abrir o arquivo.");
-    }
-
-    Login rbn;
-
-    userInsert[strcspn(userInsert, "\n")] = '\0';
-    senhaInsert[strcspn(senhaInsert, "\n")] = '\0';
-
-    while (fscanf(file, "%s %s", rbn.user, rbn.senha) != EOF) {
-        if (strcmp(userInsert, rbn.user) == 0 && strcmp(senhaInsert, rbn.senha) == 0) {
-            fclose(file);
-            return 1;
-        }
-    }
-    fclose(file);
-
-    return 0;
+void limparBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
-int conferir_usuario(const char *usuario,int qual){
-    
-    Login conf;
-    FILE *file;
+void registrarUsuarioComum() { //funcao para cadastrar o usuário comum
+    FILE *file;  //UC = usuário comum
+    file = fopen("cadastroUsuarioComum.txt", "ab");
 
-    file = fopen("cadastroColetor.txt","r");
-    if(file == NULL){
-        printf("Erro ao abrir o arquivo");
-    }
-
-     while (fscanf(file, "%s %s", conf.user, conf.senha) != EOF) {
-        if (strcmp(usuario, conf.user) == 1) {
-            printf("Nome de usuário já existente.\nAperte qualquer tecla para cadastrar novamente");
-            fclose(file);
-            return 0;
-        }
-        else{
-            return 1;
-        }
-    }
-}
-
-int cadastroColetor() {
-    FILE *file;
-    file = fopen("cadastroColetor.txt", "ab");
-    if(file == NULL){
-        printf("Erro ao abrir ao arquivo");
-    }
-
-
-    Login cad;
-
-    printf("Digite seu nome de usuário: ");
-    fgets(cad.user, 50, stdin);
-
-    printf("Digite sua senha: ");
-    fgets(cad.senha, 50, stdin);
-
-    cad.user[strcspn(cad.user, "\n")] = '\0';
-    cad.senha[strcspn(cad.senha, "\n")] = '\0';
-
-   
-
-    fprintf(file, "%s %s\n", cad.user, cad.senha);
-        
-    
-    fclose(file);
-}
-
-void change() {
-    FILE *file;
-    file = fopen("enderCads.txt", "r+b");
-    Endereco end;
-
-    int index = 1;
-}
-
-void cadastroUsuario() {
-    int random, min = 0, max = 100;
-
-    FILE *file;
-    file = fopen("userCads.txt", "ab");
-
-
-    Login cads;
-
-    printf("Digite seu nome de usuário: ");
-    fgets(cads.user, 50, stdin);
-
-    printf("Digite sua senha: ");
-    fgets(cads.senha, 50, stdin);
-
-    srand(time(NULL));
-    random = (min + (rand() % (max - min + 1)));
-
-    cads.userNumber = random;
-
-    cads.user[strcspn(cads.user, "\n")] = '\0';
-    cads.senha[strcspn(cads.senha, "\n")] = '\0';
-
-    fprintf(file, "%s %s \n", cads.user, cads.senha);
-
-    fclose(file);
-}
-
-int logarUsuario(char user[], char password[]) {
-    FILE *file;
-    file = fopen("userCads.txt", "r");
     if (file == NULL) {
-        printf("Erro ao abrir o arquivo.\n");
+        printf("\nErro ao abrir o arquivo!");
+        return;
+    }
+
+    Login cadastro;
+
+    printf("Digite aqui seu nome: ");
+    fgets(cadastro.nome, 50, stdin);
+    cadastro.nome[strcspn(cadastro.nome, "\n")] = '\0';
+
+    printf("Digite aqui sua senha: ");
+    fgets(cadastro.senha, 50, stdin);
+    cadastro.senha[strcspn(cadastro.senha, "\n")] = '\0';
+
+    fprintf(file, "%s %s\n", cadastro.nome, cadastro.senha);
+
+    fclose(file);
+}
+
+
+void registrarColetor() { //funcao que registra o coletor
+    FILE *file;
+    file = fopen("cadastroColetor.txt", "w");
+
+    if (file == NULL) {
+        printf("\nErro ao abrir o arquivo!");
+        return;
+    }
+
+    LoginColetor cadastroColetor;
+
+    printf("Digite aqui seu nome: ");
+    fgets(cadastroColetor.nomeColetor, 50, stdin);
+    cadastroColetor.nomeColetor[strcspn(cadastroColetor.nomeColetor, "\n")] = '\0';
+
+    printf("Digite aqui sua senha: ");
+    fgets(cadastroColetor.senhaColetor, 50, stdin);
+    cadastroColetor.senhaColetor[strcspn(cadastroColetor.senhaColetor, "\n")] = '\0';
+
+    fprintf(file, "%s %s\n", cadastroColetor.nomeColetor, cadastroColetor.senhaColetor);
+
+    fclose(file);
+}
+
+int loginUsuario(Login * usuario) {
+    
+    FILE *file;
+    file = fopen("cadastroUsuarioComum.txt", "r");
+
+    if (file == NULL) {
+        printf("\nNão há nennhum usuário cadastrado no momento!");
+        autenticado = 0;
         return 0;
     }
 
-    Login rbn;
-
-    char username[50], pass[50];
-
+    char userInsert[50], senhaInsert[50];
+    printf("\nBem vindo a aba de login!\n");
     printf("Digite seu nome de usuário: ");
     fgets(userInsert, 50, stdin);
-
-    printf("Digite sua senha: ");
-    fgets(senhaInsert, 50, stdin);
-
     userInsert[strcspn(userInsert, "\n")] = '\0';
+
+    printf("Digite sua senha de acesso: ");
+    fgets(senhaInsert, 50, stdin);
     senhaInsert[strcspn(senhaInsert, "\n")] = '\0';
 
-    while (fscanf(file, "%s %s", rbn.user, rbn.senha) != EOF) {
-        if (strcmp(userInsert, rbn.user) == 0 && strcmp(senhaInsert, rbn.senha) == 0) {
-            fclose(file);
-            return 1;
+    int usuarioExiste = 0;
+
+    while (fscanf(file, "%s %s\n", usuario->nome, usuario->senha) != EOF) {
+        if (strcmp(userInsert, usuario->nome) == 0) {
+            usuarioExiste = 1;
+            if (strcmp(senhaInsert, usuario->senha) == 0) {
+                fclose(file);
+                system("cls");
+                autenticado = 1;
+                printf("Login bem-sucedido! Bem-vindo, %s.", usuario->nome);
+                return 1;
+            }
         }
     }
+
     fclose(file);
 
+    if (usuarioExiste) {
+        autenticado = 0;
+        printf("Senha incorreta. Tente novamente.\n");
+        loginUsuario(&usuario);
+    }else{
+        autenticado = 0;
+        printf("Usuário não encontrado. Verifique seu nome de usuário.\n");
+        loginUsuario(&usuario);
+    }
+
     return 0;
+}
+
+void cadastrarEndereco() {
+    FILE *file;
+
+    file = fopen("enderecosCadastrados.txt", "a");
+
+    if(file == NULL) {
+        printf("\nNão há nenhum endereço cadastrado.");
+    }
+
+    Endereco endereco;
+
+    printf("Digite aqui sua rua: ");
+    fgets(endereco.rua, 50, stdin);
+    endereco.rua[strcspn(endereco.rua, "\n")] = '\0';
+
+    printf("Digite aqui seu bairro: ");
+    fgets(endereco.bairro, 50, stdin);
+    endereco.bairro[strcspn(endereco.bairro, "\n")] = '\0';
+
+    printf("Digite aqui o número: ");
+    scanf("%d", &endereco.numero);
+
+    fprintf(file, "%s %s %d\n", endereco.rua, endereco.bairro, endereco.numero);
+
+    fclose(file);
 }
 
 void verChamados() {
     FILE *file;
-    file = fopen("enderCads.txt", "r");
+    char caracter;
+    file = fopen("enderecosCadastrados.txt", "r");
 
-    char linhas[200];
-    printf("Pontos de coletas disponíveis:\n");
-    while (fgets(linhas, sizeof(linhas), file) != NULL) {
-        printf("%s", linhas);
+    if(file == NULL) {
+        printf("\nNão há endereços cadastrados!");
+    }else {
+        printf("\nPontos de coleta que estão disponíveis no momento: \n");
+        while ((caracter = fgetc(file)) != EOF) {
+            putchar(caracter);  
+        }
     }
-
-    printf("\n");
-
-    fclose(file);
-}
-
-void cadastroEndereco() {
-    
-    FILE *file;
-    file = fopen("enderCads.txt", "a");
-
-    Endereco rbn;
-
-    printf("Digite o seu bairro: ");
-    fgets(rbn.bairro, 50, stdin);
-
-    printf("Digite a sua rua: ");
-    fgets(rbn.rua, 50, stdin);
-
-    printf("Digite o número do endereço: ");
-    fgets(rbn.numero, 50, stdin);
-
-    rbn.bairro[strcspn(rbn.bairro, "\n")] = '\0';
-    rbn.rua[strcspn(rbn.rua, "\n")] = '\0';
-    rbn.numero[strcspn(rbn.numero, "\n")] = '\0';
-
-    
-
-    fprintf(file, "%s, %s, %s\n", rbn.bairro,rbn.rua,rbn.numero);
 
     fclose(file);
 }
 
 int main() {
-    setlocale(LC_ALL, "Portuguese");
-    system("cls");
-    Login cads;
-    
-    int escolha=10, acesso=0;
-    
-    printf("\n+-------------------------------+");
-    printf("\n|(1) Registrar usuário comum    |");
-    printf("\n|(2) Registrar coletor          |");
-    printf("\n|(3) Login                      |");
-    printf("\n|(0) Sair                       |");
-    printf("\n+-------------------------------+");
-    printf("\n Opção: ");
-    scanf("%d", &escolha);
-    printf("+----------------------------+\n");
-    
-    if(escolha != 1 && escolha != 2 && escolha != 3 && escolha != 0) {
-        printf("Opção inválida!");
-        return 0;
-    }
+    int escolha;
 
-    getchar();
+    Login usuario;
 
-    switch (escolha) {
-        case 0:
-            printf("\nSaindo...");
-            return 0;
-            break;
-        case 1:
-            cadastroUsuario();
+        printf("\n+-------------------------------+");
+        printf("\n|(1) Registrar usuário comum    |");
+        printf("\n|(2) Registrar coletor          |");
+        printf("\n|(3) Login                      |");
+        printf("\n|(0) Sair                       |");
+        printf("\n+-------------------------------+");
+        printf("\n Opção: ");
+        scanf("%d", &escolha);
+        limparBuffer();
+        printf("+----------------------------+\n");
 
-            break;
-
-        case 3: {
-            int autenticador = 0;
-
-            while (autenticador != 1) {
-                if (logarUsuario(cads.user, cads.senha) == 0) {
-                    if (loginColetor(cads.user, cads.senha) == 1) {
-                        autenticador = 1;
-                        acesso = 1;
-
-                    } else {
-                        system("clear");
-                        printf("Senha incorreta, tente novamente.\n");
-                    }
-                }else{
-                    autenticador = 1;
-                }
-            }
-
-            
-            break;
+        switch(escolha){
+            case 0:
+                printf("\nSaindo...");
+                return 0;
+                break;
+            case 1:
+                registrarUsuarioComum();
+                printf("\nUsuário registrado com sucesso!");
+                system("cls");
+                loginUsuario(&usuario);
+                break;
+            case 2:
+                registrarColetor();
+                printf("\nUsuário registrado com sucesso!");
+                break;
+            case 3:
+                loginUsuario(&usuario);
+                break;
+            default:
+                printf("\nOpção inválida!");
+                return 0;
+                break;
         }
 
-        case 2:
-            cadastroColetor();
-            acesso = 1;
-            break;    
-            
-    }
-
-    if(acesso == 1){
-
-            system("cls");
-
-            printf("\n+----------------------------+");
-            printf("\n|(1) Ver chamados            |");
-            printf("\n|(2) Reservar chamados       |");
-            printf("\n|(0) Sair                    |");
-            printf("\n+----------------------------+");
-            printf("\n Opção: ");
-            scanf("%d", &escolha);
-            getchar();
-
-            switch (escolha) {
-                case 1:
-                    system("cls");
-                    verChamados();
-                    break;
-
-                case 2:
-                    printf("Não implementado\n");
-                    break;
-
-                default:
-                    printf("Não implementado\n");
-                    break;
-            }
-    }else{
-            system("cls");
-            while(escolha != 0) {
-                
+        if(autenticado == 1) {
+            while(escolha != 0){
                 printf("\n+----------------------------+");
                 printf("\n|(1) Registrar endereço      |");
-                printf("\n|(2) Fazer chamado           |");
+                printf("\n|(2) Fazer chamado           |"); //?
                 printf("\n|(3) Ver chamados            |");
                 printf("\n|(4) Mudar endereços         |");
                 printf("\n|(0) Sair                    |");
                 printf("\n+----------------------------+");
                 printf("\n Opção: ");
                 scanf("%d", &escolha);
-                getchar();
-                
-                switch (escolha) {
-                case 0:
-                    printf("\nSaindo...");
-                    return 0;
-                    break;
-                case 1:
-                    system("cls");
-                    cadastroEndereco();
-                    break;
+                limparBuffer();
 
-                case 2:
-                    printf("Não implementado\n");
-                    break;
+                switch(escolha) {
+                    case 0:
+                        printf("Saindo...");
+                        return 0;
+                        break;
+                    case 1:
+                        system("cls");
+                        cadastrarEndereco();
+                        break;
+                    case 2:
 
-                case 3:
-                    system("cls");
-                    verChamados();
-                    break;
+                        break;
+                    case 3:
+                        system("cls");
+                        verChamados();
+                        break;
+                    case 4:
 
-                case 4:
-                    printf("Não implementado\n");
-                    break;
-
-                default:
-                    printf("Opção inválida\n");
-                    break;
-            }
+                        break;
+                }
             }
         }
-    }
+
+    return 0;
+}

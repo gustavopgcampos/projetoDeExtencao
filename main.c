@@ -3,9 +3,8 @@
 registrarUsuarioComum()
 registrarColetor()
 loginUsuario() -> login apenas para o usuário
-
-
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -136,7 +135,6 @@ int loginUsuario(Login * usuario) {
 
 void cadastrarEndereco() {
     FILE *file;
-
     file = fopen("enderecosCadastrados.txt", "a");
 
     if(file == NULL) {
@@ -144,6 +142,7 @@ void cadastrarEndereco() {
     }
 
     Endereco endereco;
+
 
     printf("Digite aqui sua rua: ");
     fgets(endereco.rua, 50, stdin);
@@ -176,6 +175,35 @@ void verChamados() {
     }
 
     fclose(file);
+}
+
+void excluirEnderecos(){ //funcao que exclui um endereço determinado pelo seu número
+    FILE *fileOG;
+    FILE *fileTEMP;
+    Endereco end;
+    int num;
+
+    fileOG = fopen("enderecosCadastrados.txt", "rb");
+    fileTEMP = fopen("enderecosTemporarios.txt", "ab");
+
+    if(fileOG == NULL || fileTEMP == NULL) {
+        printf("\nProblemas na abertura do arquivo!");
+    }else{
+        printf("Digite o número da casa a ser excluido: ");
+        scanf("%d", &num);
+
+        while(fread(&end, sizeof(Endereco), 1, fileOG) == 1){  //le o arquivo até encontrar o numero digitado, se encontrar move para o outro arquivo
+            if(strcmp(num, end.numero) != 0) {
+                fwrite(&end, sizeof(Endereco), 1, fileTEMP);
+            }
+        }
+    }
+
+    fclose(fileOG);
+    fclose(fileTEMP);
+    remove("enderecosCadastrados.txt");
+    rename("enderecosTemporarios.txt", "enderecosCadastrados.txt");
+    printf("\nEndereço excluido com sucesso!");
 }
 
 int main() {
@@ -224,7 +252,7 @@ int main() {
                 printf("\n|(1) Registrar endereço      |");
                 printf("\n|(2) Fazer chamado           |"); //?
                 printf("\n|(3) Ver chamados            |");
-                printf("\n|(4) Mudar endereços         |");
+                printf("\n|(4) Excluir endereço        |");
                 printf("\n|(0) Sair                    |");
                 printf("\n+----------------------------+");
                 printf("\n Opção: ");
@@ -248,7 +276,7 @@ int main() {
                         verChamados();
                         break;
                     case 4:
-
+                        excluirEnderecos();
                         break;
                 }
             }
